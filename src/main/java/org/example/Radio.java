@@ -1,25 +1,39 @@
 package org.example;
 
 public class Radio {
-    // Два состояния у радио:
+    // Три состояния у радио:
     private int currentStation; // станции от 0 до 9
     private int currentVolume; // громкость от 0 до 100
+    private int stationsCount; // Хранит количество станций
+
+    // Ниже конструкторы
+
+    // Если пользователь пользователь не указал количество станций
+    public Radio() {
+        this.stationsCount = 10;
+    }
+
+    //Если пользователь сам задаёт кол-во станций
+    public Radio(int stationsCount) {
+        this.stationsCount = stationsCount;
+    }
 
     // Ставим геттер для прочтения и тестирования приватных полей в значениях громкости
     public int getCurrentVolume() {
         return currentVolume;
     }
 
-    // Если громкость меньше 100, мы можем прибавить на +1, но макс до 100
+    // Увеличение громкости
     public void increaseVolume() {
         if (currentVolume < 100) {
-            currentVolume = currentVolume + 1;
+            currentVolume++;
         }
     }
-    // Если громкость больше 0, мы можем убавить на -1, но мин до 0
+
+    // Уменшение громкости
     public void decreaseVolume() {
         if (currentVolume > 0) {
-            currentVolume = currentVolume - 1;
+            currentVolume--;
         }
     }
 
@@ -30,24 +44,31 @@ public class Radio {
 
     // Прописываем "границы" для станции от 0 до 9
     public void setCurrentStation(int station) {
-        if (station >= 0 && station <= 9) {
+        if (station >= 0 && station < stationsCount) {
             currentStation = station;
         }
     }
 
-    // Добавляем переключение станций (если станция уже 9-я, то +1 сделает её 0-й и наоборот -1 вернёт её к 0)
+    // Геттер количества станций
+    public int getStationsCount() {
+        return stationsCount;
+    }
+
+    // Добавляем переключение станций (здесь - вперёд)
     public void next() {
-        if (currentStation ==9) {
+        if (currentStation == stationsCount - 1) {
             currentStation = 0;
         } else {
-            currentStation = currentStation + 1;
+            currentStation++;
         }
     }
+
+    // И соответственно переключение назад
     public void prev() {
         if (currentStation == 0) {
-            currentStation = 9;
+            currentStation = stationsCount - 1;
         } else {
-            currentStation = currentStation - 1;
+            currentStation--;
         }
     }
 }

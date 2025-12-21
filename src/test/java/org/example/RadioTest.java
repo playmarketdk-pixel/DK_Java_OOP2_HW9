@@ -6,57 +6,67 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class RadioTest {
 
+    // ТЕСТЫ ГРОМКОСТИ:
+
     @Test
     void shouldGetInitialVolume() {
         Radio radio = new Radio();
         assertEquals(0, radio.getCurrentVolume());
-    } // этим тестом мы проверяем, что начальное значение громкости = 0
+    }
+    // Проверяем, что начальная громкость всегда 0.
 
     @Test
     void shouldIncreaseVolumeByOne() {
         Radio radio = new Radio();
         radio.increaseVolume();
         assertEquals(1, radio.getCurrentVolume());
-    } // этим тестом мы проверяем, что если увеличиваем громкость, она прибавляется на 1
+    }
+    // Проверяем, что увеличение громкости работает корректно: +1 от текущего значения.
 
     @Test
     void shouldNotExceedMaxVolume100() {
         Radio radio = new Radio();
-        for (int i = 0; i < 101; i++) {
+        for (int i = 0; i < 150; i++) {
             radio.increaseVolume();
-        } // задаём граничное значение, прибавлять на 1 можно только до 100 (т.е. < 101)
+        }
         assertEquals(100, radio.getCurrentVolume());
-        radio.increaseVolume();
-        assertEquals(100, radio.getCurrentVolume());
-    } // при попытке увеличения громкости, когда она на максимуме, она остаётся на показателе 100.
+    }
+    // Проверяем, что громкость не превышает 100, даже если нажимать + много раз.
 
     @Test
-    void sholdDecreaseVolumeByOne() {
+    void shouldDecreaseVolumeByOne() {
         Radio radio = new Radio();
         radio.increaseVolume();
         radio.decreaseVolume();
         assertEquals(0, radio.getCurrentVolume());
-    } // Проверяем логику прибавления / убавления значения - изначально громкость на 0, прибавляем на 1, затем убавляем и становится снова 0
+    }
+    // Проверяем, что уменьшение громкости работает корректно: -1 от текущего значения.
 
     @Test
-    void shouldNotGoBeLowMinVolume0() {
+    void shouldNotGoBelowMinVolume0() {
         Radio radio = new Radio();
         radio.decreaseVolume();
         assertEquals(0, radio.getCurrentVolume());
-    } // Снижать громкость ниже 0 нельзя, если попытаться уменьшить во время 0, останется 0
+    }
+    // Проверяем, что громкость не уходит ниже 0.
+
+
+    // ТЕСТЫ СТАНЦИЙ:
 
     @Test
     void shouldGetInitialStation() {
         Radio radio = new Radio();
         assertEquals(0, radio.getCurrentStation());
-    } // Начальное значение станции = 0
+    }
+    // Проверяем, что начальная станция всегда 0.
 
     @Test
     void shouldSetValidStation() {
         Radio radio = new Radio();
         radio.setCurrentStation(5);
         assertEquals(5, radio.getCurrentStation());
-    } // Берём срединное значение 5, должно приниматься и выводить 5
+    }
+    // Проверяем, что корректное значение станции устанавливается.
 
     @Test
     void shouldIgnoreInvalidStationBelowRange() {
@@ -64,7 +74,8 @@ public class RadioTest {
         radio.setCurrentStation(3);
         radio.setCurrentStation(-1);
         assertEquals(3, radio.getCurrentStation());
-    } // Проверка корректности - ставим 3, принимается 3. Если после этого пробуем ставить несуществующее значение -1, то остаётся 3
+    }
+    // Если попытаться установить станцию ниже 0, значение должно игнорироваться.
 
     @Test
     void shouldIgnoreInvalidStationAboveRange() {
@@ -72,37 +83,64 @@ public class RadioTest {
         radio.setCurrentStation(7);
         radio.setCurrentStation(10);
         assertEquals(7, radio.getCurrentStation());
-    } // Такая же проверка, как и предыдущая, но с положительным числом выше возможного (то есть 10, а радиостанций макс 9)
+    }
+    // Если попытаться установить станцию выше максимальной (9 при 10 станциях), значение игнорируется.
+
+
+    // --- ТЕСТЫ ПЕРЕКЛЮЧЕНИЯ СТАНЦИЙ (ГИБКОЕ КОЛИЧЕСТВО) ---
 
     @Test
     void shouldGoNextInMiddleRange() {
-        Radio radio = new Radio();
+        Radio radio = new Radio(15); // 15 станций: 0–14
         radio.setCurrentStation(4);
         radio.next();
         assertEquals(5, radio.getCurrentStation());
-    } // при переключении станции со срединного значения (4) на следующую станцию, получаем следующую цифру (5)
+    }
+    // Проверяем обычное переключение вперёд внутри диапазона.
 
     @Test
-    void shouldWrapNextFrom9To0() {
-        Radio radio = new Radio();
-        radio.setCurrentStation(9);
+    void shouldWrapNextFromLastToZero() {
+        Radio radio = new Radio(15);
+        int last = radio.getStationsCount() - 1; // 14
+        radio.setCurrentStation(last);
         radio.next();
         assertEquals(0, radio.getCurrentStation());
-    } // Если стоит макс станция 9, то при переключении дальше, получим отсчёт заново (т.е. станцию 0)
+    }
+    // Если текущая станция последняя, next должен переключать на 0.
 
     @Test
     void shouldGoPrevInMiddleRange() {
-        Radio radio = new Radio();
+        Radio radio = new Radio(20);
         radio.setCurrentStation(6);
         radio.prev();
         assertEquals(5, radio.getCurrentStation());
-    } // Если стоит станция 6, то при нажатии кнопки prev станция переключается на предыдущую - 5
+    }
+    // Проверяем обычное переключение назад внутри диапазона.
 
     @Test
-    void shouldWrapPrevFrom0To9() {
-        Radio radio = new Radio();
+    void shouldWrapPrevFromZeroToLast() {
+        Radio radio = new Radio(20);
+        int last = radio.getStationsCount() - 1; // 19
         radio.setCurrentStation(0);
         radio.prev();
-        assertEquals(9, radio.getCurrentStation());
-    } // И соответственно при переключении назад со станции 0, получаем станцию 9
+        assertEquals(last, radio.getCurrentStation());
+    }
+    // Если текущая станция 0, prev должен переключать на последнюю станцию.
+
+
+    // ТЕСТЫ КОЛИЧЕСТВА СТАНЦИЙ:
+
+    @Test
+    void shouldSetDefaultStationsCount() {
+        Radio radio = new Radio();
+        assertEquals(10, radio.getStationsCount());
+    }
+    // Проверяем, что по умолчанию количество станций = 10.
+
+    @Test
+    void shouldSetCustomStationsCount() {
+        Radio radio = new Radio(30);
+        assertEquals(30, radio.getStationsCount());
+    }
+    // Проверяем, что конструктор с параметром корректно задаёт количество станций.
 }
